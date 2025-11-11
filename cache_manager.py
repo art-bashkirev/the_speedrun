@@ -1,53 +1,35 @@
 import json
 
 from redis.asyncio import Redis
-from typing import Any, Optional
+from typing import Any, Optional, List
 
 class CacheManager():
+    TTL_USER_DOCUMENTS = 5 * 60
+    TTL_SHARED_DOCUMENTS = 2 * 60
+    TTL_USER_DOCUMENT = 10 * 60
+    TTL_PERMISSIONS = 15 * 60
+
     def __init__(self):
         self.client = Redis(decode_responses=True)
-        self.metrics = {
-            "hits": 0,
-            "misses": 0,
-            "invalidations": 0
-        }
 
-    def get_ttl_for_category(self, category_type: str) -> int:
-        ttl_map = {
-            "sale": 120,
-            "popular": 300, 
-            "regular": 900
-        }
-        return ttl_map.get(category_type, 300)
-    
-    def get_ttl_for_endpoint(self, endpoint: str) -> int:
-        ttl_map = {
-            "sales_summary": 180,
-            "inventory_alerts": 60,
-        }
-        return ttl_map.get(endpoint, 300)
-    
-    def generate_key(self, endpoint: str, **params) -> str:
-        if endpoint == "categories_list":
-            return "categories:list"
-        elif endpoint == "category_detail":
-            return f"categories:detail:{params['category_id']}"
-        elif endpoint == "sales_summary":
-            return "sales:summary"
-        elif endpoint == "inventory_alerts":
-            return "inventory:alerts"
-        else:
-            return f"cache:{endpoint}:{params}"
+    def key_user_documents(self, user_id: int) -> str:
+        return f"user:{user_id}:documents"
 
+    def key_shared_documents(self) -> str:
+        return "shared:documents"
+
+    def key_user_document(self, user_id: int, doc_id: int) -> str:
+        return f"user:{user_id}:document:{doc_id}"
+
+    def key_document_permissions(self, doc_id: int) -> str:
+        return f"document:{doc_id}:permissions"
 
     async def get(self, key: str) -> Optional[Any]:
         try:
             data = await self.client.get(key)
             if data:
-                self.metrics["hits"] += 1
                 return json.loads(data)
             else:
-                self.metrics["misses"] += 1
                 return None
         except:
             return None
@@ -60,23 +42,13 @@ class CacheManager():
         except:
             return False
     
-    async def invalidate_key(self, key: str) -> bool:
-        try:
-            result = await self.client.delete(key)
-            if result:
-                self.metrics['invalidations'] += 1
-            return bool(result)
-        except Exception as e:
-            return False
-    
-    async def get_metrics(self) -> dict:
-        total = self.metrics['hits'] + self.metrics['misses']
-        return {
-            'hits': self.metrics['hits'],
-            'misses': self.metrics['misses'], 
-            'invalidations': self.metrics['invalidations'],
-            'hit_ratio': self.metrics['hits'] / total if total > 0 else 0
-        }
+    async def invalidate(self, keys: List[str]) -> List[str]:
+        result = []
+        for key in keys:
+            deleted = await self.client.delete(key)
+            if deleted:
+                result.append(key)
+        return result
     
     async def close(self):
         await self.client.aclose()

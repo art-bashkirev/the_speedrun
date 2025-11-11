@@ -11,14 +11,21 @@ app = FastAPI()
 # Auth
 @app.post("/auth/login")
 async def login(data: LoginModel):
-    # TODO: Implement login logic
+    user = db.get_user_by_username(data.username)
+    if user and user.password != data.password:
+            return {"error": "Invalid password"} 
     return {"message": "Login successful"}
 
 # Admin
 @app.get("/admin/cache/clear")
-async def clear_cache():
-    # TODO: Implement cache clearing logic
+async def clear_cache(data: LoginModel):
+    user = db.get_user_by_username(data.username)
+    if not user or user.role != "admin":
+        return {"error": "Unauthorized"}
+    cache.client.flushall()
     return {"message": "Cache cleared"}
+
+
 
 
 @app.post("/documents", response_model=DocumentOut, status_code=status.HTTP_201_CREATED)

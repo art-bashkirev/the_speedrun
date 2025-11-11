@@ -1,6 +1,9 @@
 from fastapi import FastAPI
 from models import *
 
+from cache_manager import *
+from permissions_manager import *
+
 app = FastAPI()
 
 # Auth

@@ -1,3 +1,5 @@
+from models import User, Document, Permission
+
 fake_users_db = {
     1: {"id": 1, "username": "john_doe", "role": "user", "password": "password123"},
     2: {"id": 2, "username": "jane_smith", "role": "admin", "password": "admin123"},
@@ -49,6 +51,7 @@ fake_permissions_db = {
     3: [{"user_id": 1, "permission_level": "write"}],
 }
 
+
 class Database:
     @staticmethod
     def get_user(user_id: int):
@@ -61,3 +64,10 @@ class Database:
     @staticmethod
     def get_permissions(document_id: int):
         return fake_permissions_db.get(document_id, [])
+
+    @staticmethod
+    def get_user_by_username(username: str):
+        for user in fake_users_db.values():
+            if user["username"] == username:
+                return User(**user)
+        return None

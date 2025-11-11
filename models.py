@@ -5,7 +5,9 @@ from typing import Optional, List
 # Регистрация пользователя
 class UserCreate(BaseModel):
     email: EmailStr
-    password: constr(min_length=8) = Field(..., description="Password, at least 8 characters")
+    password: constr(min_length=8) = Field(
+        ..., description="Password, at least 8 characters"
+    )
 
 
 # Логин пользователя

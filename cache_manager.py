@@ -60,7 +60,7 @@ class CacheManager():
         except:
             return False
     
-    async def invalidate_key(self, key: str, reason: str = "") -> bool:
+    async def invalidate_key(self, key: str) -> bool:
         try:
             result = await self.client.delete(key)
             if result:

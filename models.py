@@ -2,6 +2,26 @@ from pydantic import BaseModel, EmailStr, Field, constr
 from typing import Optional, List
 
 
+class User(BaseModel):
+    id: int
+    username: str
+    role: str
+    password: str
+
+class Document(BaseModel):
+    id: int
+    title: str
+    content: str
+    category: str
+    is_public: bool
+    created_by: int
+    created_at: str
+    last_modified: str
+
+class Permission(BaseModel):
+    user_id: int
+    permission_level: str
+
 # Регистрация пользователя
 class UserCreate(BaseModel):
     email: EmailStr

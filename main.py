@@ -4,12 +4,18 @@ from models import *
 from cache_manager import *
 from permissions_manager import *
 
+from database import Database
+
 app = FastAPI()
+
+db = Database()
 
 # Auth
 @app.post("/auth/login")
 async def login(data: LoginModel):
-    # TODO: Implement login logic
+    user = db.get_user_by_username(data.username)
+    if user and user.password != data.password:
+            return {"error": "Invalid password"} 
     return {"message": "Login successful"}
 
 # Admin

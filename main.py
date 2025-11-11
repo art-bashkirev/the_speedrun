@@ -8,6 +8,10 @@ from datetime import datetime
 
 app = FastAPI()
 
+db = Database()
+cache = CacheManager()
+# perm_manager = PermissionsManager(db, cache)
+
 # Auth
 @app.post("/auth/login")
 async def login(data: LoginModel):
@@ -43,6 +47,8 @@ async def create_document(document: DocumentCreate, x_user_id: int = Header(...)
         created_at=new_iso,
         last_modified=new_iso
     )
+
+    db.set_document(new_id, document_response.dict())
 
     # Database.set_document(new_id, document_response) TODO: ...
 

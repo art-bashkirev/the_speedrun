@@ -71,3 +71,17 @@ class Database:
             if user["username"] == username:
                 return User(**user)
         return None
+
+    @staticmethod
+    def set_document(document_id: int, document_data: dict):
+        fake_documents_db[document_id] = document_data
+    
+    @staticmethod
+    def update_document(document_id: int, update_data: dict):
+        if document_id in fake_documents_db:
+            fake_documents_db[document_id].update(update_data)
+    @staticmethod   
+    def add_permission(document_id: int, permission: dict):
+        if document_id not in fake_permissions_db:
+            fake_permissions_db[document_id] = []
+        fake_permissions_db[document_id].append(permission)
